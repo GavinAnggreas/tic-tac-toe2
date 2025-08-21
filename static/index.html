@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe - Multiplayer Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #e5e7eb;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #111;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            padding: 20px;
+            max-width: 560px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #e5e7eb;
+            font-size: 2em;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .game-section {
+            display: none;
+        }
+
+        .lobby-section {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e5e7eb;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #30363d;
+            background: #0a0a0a;
+            color: #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            background: #0f0f0f;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #e5e7eb;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #334155, #1f2937);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            background: #0a0a0a;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid #222;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            border-radius: 4px;
+            background: #0f0f0f;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 56px;
+            font-weight: 800;
+            color: #e5e7eb;
+            border: 2px solid #30363d;
+        }
+
+        .cell:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .cell.player1 {
+            color: #ef4444;
+            background: #0a0a0a;
+            border-color: #3a1f1f;
+        }
+
+        .cell.player2 {
+            color: #22d3ee;
+            background: #0a0a0a;
+            border-color: #12323a;
+        }
+
+        .game-info {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #0f0f0f;
+            border-radius: 10px;
+            border: 1px solid #222;
+        }
+
+        .game-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        .status.winner {
+            color: #22c55e;
+        }
+
+        .status.draw {
+            color: #94a3b8;
+        }
+
+        .room-info {
+            background: #0f0f0f;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #222;
+        }
+
+        .room-info h4 {
+            color: #9ca3af;
+            margin-bottom: 10px;
+        }
+
+        .player-list {
+            list-style: none;
+        }
+
+        .player-list li {
+            padding: 5px 0;
+            color: #e5e7eb;
+        }
+
+        .error {
+            color: #fca5a5;
+            background: #2a1a1a;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #7f1d1d;
+        }
+
+        .success {
+            color: #86efac;
+            background: #102116;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #14532d;
+        }
+
+        .loading {
+            text-align: center;
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+                margin: 10px;
+                max-width: 520px;
+            }
+            
+            .cell {
+                width: 80px;
+                height: 80px;
+                font-size: 40px;
+            }
+            
+            .game-board {
+                padding: 15px;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Tic Tac Toe</h1>
+        </div>
+
+        <!-- Lobby Section -->
+        <div class="lobby-section" id="lobbySection">
+            <div class="form-group">
+                <label for="roomName">Nama Ruangan:</label>
+                <input type="text" id="roomName" placeholder="Isi nama ruangan">
+            </div>
+            
+            <div class="form-group">
+                <label for="creatorUsername">Nama Kamu:</label>
+                <input type="text" id="creatorUsername" placeholder="Isi nama kamu">
+            </div>
+            
+            <div class="form-group">
+                <label for="roomPassword">Kata Sandi (opsional):</label>
+                <input type="password" id="roomPassword" placeholder="Isi kata sandi (jika perlu)">
+            </div>
+            
+            <button class="btn" onclick="createRoom()">Buat Ruangan</button>
+            
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #e1e5e9;">
+            
+            <h3 style="text-align: center; margin-bottom: 20px;">Gabung ke Ruangan</h3>
+            
+            <div class="form-group">
+                <label for="joinRoomId">ID Ruangan:</label>
+                <input type="text" id="joinRoomId" placeholder="Isi ID ruangan">
+            </div>
+            
+            <div class="form-group">
+                <label for="joinUsername">Nama Kamu:</label>
+                <input type="text" id="joinUsername" placeholder="Isi nama kamu">
+            </div>
+            
+            <div class="form-group">
+                <label for="joinPassword">Kata Sandi (jika perlu):</label>
+                <input type="password" id="joinPassword" placeholder="Isi kata sandi ruangan">
+            </div>
+            
+            <button class="btn btn-success" onclick="joinRoom()">Gabung</button>
+            <button class="btn btn-secondary" onclick="joinVsComputer()">Lawan Komputer</button>
+        </div>
+
+        <!-- Game Section -->
+        <div class="game-section" id="gameSection">
+            <div class="room-info" id="roomInfo">
+                <h4>Info Ruangan</h4>
+                <div id="roomDetails"></div>
+            </div>
+            
+            <div class="game-info">
+                <h3>Status Game</h3>
+                <div class="status" id="gameStatus">Menunggu pemain...</div>
+            </div>
+            
+            <div class="game-board" id="gameBoard"></div>
+            
+            <div style="text-align: center;">
+                <button class="btn btn-secondary" onclick="resetGame()">Ulangi Permainan</button>
+                <button class="btn btn-danger" onclick="leaveRoom()">Keluar</button>
+            </div>
+            
+            <!-- Waiting for opponent section -->
+            <div id="waitingSection" style="text-align: center; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <h4>Menunggu lawan...</h4>
+                <p>Bagikan ID Ruangan ini: <strong id="shareRoomId"></strong></p>
+                <button class="btn btn-success" onclick="addComputerOpponent()">Lawan Komputer</button>
+                <button class="btn btn-secondary" onclick="refreshRoomInfo()">Muat Ulang</button>
+            </div>
+        </div>
+
+        <div id="messageArea"></div>
+    </div>
+
+    <script>
+        let currentRoomId = null;
+        let currentPlayerId = null;
+        let currentUsername = null;
+        let gameBoard = null;
+        let currentPlayer = 1;
+        let myPlayerNumber = null;
+        let websocket = null;
+        let pollingInterval = null;
+
+        // Detect if running on Vercel (has .vercel.app in URL)
+        const isVercel = window.location.hostname.includes('vercel.app');
+
+        function showMessage(message, type = 'success') {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => {
+                messageArea.innerHTML = '';
+            }, 5000);
+        }
+
+        function showSection(sectionName) {
+            document.getElementById('lobbySection').style.display = 'none';
+            document.getElementById('gameSection').style.display = 'none';
+            document.getElementById(sectionName + 'Section').style.display = 'block';
+        }
+
+        async function createRoom() {
+            const roomName = document.getElementById('roomName').value.trim();
+            const username = document.getElementById('creatorUsername').value.trim();
+            const password = document.getElementById('roomPassword').value.trim();
+            
+            if (!roomName || !username) {
+                showMessage('Please enter both room name and username', 'error');
+                return;
+            }
+            
+            try {
+                console.log('Creating room with:', { roomName, username, password });
+                const response = await fetch('/create-room', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `name=${encodeURIComponent(roomName)}&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    currentRoomId = data.room_id;
+                    currentPlayerId = data.player_id;
+                    currentUsername = username;
+                    myPlayerNumber = 1; // Creator is always player 1
+                    await initializeGame();
+                    showMessage(`Room created successfully! Room ID: ${data.room_id}`, 'success');
+                } else {
+                    const errorMessage = data.detail || data.message || 'Failed to create room';
+                    showMessage(errorMessage, 'error');
+                }
+            } catch (error) {
+                showMessage('Error creating room: ' + error.message, 'error');
+            }
+        }
+
+        async function joinRoom() {
+            const roomId = document.getElementById('joinRoomId').value.trim();
+            const username = document.getElementById('joinUsername').value.trim();
+            const password = document.getElementById('joinPassword').value.trim();
+            
+            if (!roomId || !username) {
+                showMessage('Please enter both room ID and username', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/join-room', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `room_id=${encodeURIComponent(roomId)}&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentRoomId = data.room_id;
+                    currentPlayerId = data.player_id;
+                    currentUsername = username;
+                    myPlayerNumber = 2; // Joiner is always player 2
+                    await initializeGame();
+                } else {
+                    const errorMessage = data.detail || data.message || 'Failed to join room';
+                    showMessage(errorMessage, 'error');
+                }
+            } catch (error) {
+                showMessage('Error joining room: ' + error.message, 'error');
+            }
+        }
+
+        async function joinVsComputer() {
+            const roomId = document.getElementById('joinRoomId').value.trim();
+            const username = document.getElementById('joinUsername').value.trim();
+            const password = document.getElementById('joinPassword').value.trim();
+            
+            if (!roomId || !username) {
+                showMessage('Please enter both room ID and username', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/join-vs-computer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `room_id=${encodeURIComponent(roomId)}&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentRoomId = data.room_id;
+                    currentPlayerId = data.player_id;
+                    currentUsername = username;
+                    myPlayerNumber = 1; // Human player is always player 1 vs computer
+                    await initializeGame();
+                } else {
+                    const errorMessage = data.detail || data.message || 'Failed to join room';
+                    showMessage(errorMessage, 'error');
+                }
+            } catch (error) {
+                showMessage('Error joining room: ' + error.message, 'error');
+            }
+        }
+
+        async function initializeGame() {
+            showSection('game');
+            await loadRoomInfo();
+            initializeGameBoard();
+            
+            if (isVercel) {
+                startPolling();
+                console.log('Running in Vercel mode (polling)');
+            } else {
+                initializeWebSocket();
+                console.log('Running in localhost mode (WebSocket)');
+            }
+        }
+
+        async function loadRoomInfo() {
+            try {
+                const response = await fetch(`/room-info/${currentRoomId}`);
+                const data = await response.json();
+                
+                const roomDetails = document.getElementById('roomDetails');
+                roomDetails.innerHTML = `
+                    <p><strong>Room:</strong> ${data.name}</p>
+                    <p><strong>Players:</strong> ${data.current_players}/${data.max_players}</p>
+                    <ul class="player-list">
+                        ${data.players.map(p => `<li>${p.username}${p.is_computer ? ' (Computer)' : ''}</li>`).join('')}
+                    </ul>
+                `;
+                
+                // Update share room ID
+                document.getElementById('shareRoomId').textContent = currentRoomId;
+                
+                // Show/hide waiting section based on player count
+                const waitingSection = document.getElementById('waitingSection');
+                if (data.current_players < 2) {
+                    waitingSection.style.display = 'block';
+                } else {
+                    waitingSection.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading room info:', error);
+            }
+        }
+
+        // WebSocket functions (for localhost)
+        function initializeWebSocket() {
+            const wsUrl = `ws://${window.location.host}/ws/${currentRoomId}/${currentPlayerId}`;
+            websocket = new WebSocket(wsUrl);
+            
+            websocket.onopen = function(event) {
+                console.log('WebSocket connected');
+            };
+            
+            websocket.onmessage = function(event) {
+                const message = JSON.parse(event.data);
+                handleGameMessage(message);
+            };
+            
+            websocket.onclose = function(event) {
+                console.log('WebSocket disconnected');
+            };
+            
+            websocket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        function handleGameMessage(message) {
+            if (message.type === 'game_state') {
+                updateGameBoard(message.board);
+                updateGameStatus(message);
+                currentPlayer = message.current_player;
+                
+                // Update player info if available
+                if (message.player_number && message.username) {
+                    console.log(`You are Player ${message.player_number} (${message.username})`);
+                    myPlayerNumber = message.player_number;
+                    updatePlayerInfo(message.player_number, message.username);
+                }
+                
+                // Update board interactivity based on whose turn it is
+                updateBoardInteractivity(message.current_player);
+            } else if (message.type === 'error') {
+                showMessage(message.message, 'error');
+            }
+        }
+
+        // Polling functions (for Vercel)
+        function startPolling() {
+            // Poll for game state updates every 1 second
+            pollingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/game-state/${currentRoomId}`);
+                    const gameState = await response.json();
+                    
+                    updateGameBoard(gameState.board);
+                    updateGameStatus(gameState);
+                    currentPlayer = gameState.current_player;
+                    
+                    // Update player info
+                    updatePlayerInfo(myPlayerNumber, currentUsername);
+                    
+                    // Update board interactivity based on whose turn it is
+                    updateBoardInteractivity(gameState.current_player);
+                    
+                } catch (error) {
+                    console.error('Error polling game state:', error);
+                }
+            }, 1000);
+        }
+
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+
+        function updateBoardInteractivity(currentPlayerTurn) {
+            if (!gameBoard) return;
+            const isPlayerTurn = currentPlayerTurn === myPlayerNumber;
+            const cells = gameBoard.children;
+            for (let i = 0; i < cells.length; i++) {
+                const cell = cells[i];
+                const isEmpty = cell.textContent === '';
+                if (isPlayerTurn && isEmpty) {
+                    cell.style.cursor = 'pointer';
+                    cell.style.opacity = '1';
+                } else {
+                    cell.style.cursor = isPlayerTurn ? 'not-allowed' : 'default';
+                    cell.style.opacity = isEmpty ? '0.7' : '1';
+                }
+            }
+        }
+
+        function updatePlayerInfo(playerNumber, username) {
+            const symbol = playerNumber === 1 ? 'Player X' : 'Player O';
+            const statusElement = document.getElementById('gameStatus');
+            if (statusElement && !statusElement.textContent.includes('wins') && !statusElement.textContent.includes('draw')) {
+                statusElement.textContent = `You are ${symbol} (${username})`;
+            }
+        }
+
+        function initializeGameBoard() {
+            gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = '';
+            for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 3; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.onclick = () => makeMove(row, col);
+                    gameBoard.appendChild(cell);
+                }
+            }
+        }
+
+        function updateGameBoard(board) {
+            for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 3; col++) {
+                    const cell = gameBoard.children[row * 3 + col];
+                    cell.className = 'cell';
+                    if (board[row][col] === 1) {
+                        cell.classList.add('player1');
+                        cell.textContent = 'X';
+                    } else if (board[row][col] === 2) {
+                        cell.classList.add('player2');
+                        cell.textContent = 'O';
+                    } else {
+                        cell.textContent = '';
+                    }
+                }
+            }
+        }
+
+        function updateGameStatus(gameState) {
+            const statusElement = document.getElementById('gameStatus');
+            if (gameState.game_over) {
+                if (gameState.winner) {
+                    const winnerLabel = gameState.winner === 1 ? 'Player X' : 'Player O';
+                    statusElement.textContent = `${winnerLabel} wins!`;
+                    statusElement.className = 'status winner';
+                } else {
+                    statusElement.textContent = "It's a draw!";
+                    statusElement.className = 'status draw';
+                }
+            } else {
+                const currentLabel = gameState.current_player === 1 ? 'Player X' : 'Player O';
+                statusElement.textContent = `Current turn: ${currentLabel}`;
+                statusElement.className = 'status';
+            }
+        }
+
+        function makeMove(row, col) {
+            if (isVercel) {
+                makeMovePolling(row, col);
+            } else {
+                makeMoveWebSocket(row, col);
+            }
+        }
+
+        async function makeMovePolling(row, col) {
+            try {
+                const response = await fetch('/make-move', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `room_id=${encodeURIComponent(currentRoomId)}&player_id=${encodeURIComponent(currentPlayerId)}&row=${row}&col=${col}`
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Move was successful, the polling will update the board
+                    console.log('Move successful');
+                } else {
+                    const errorMessage = data.detail || data.message || 'Failed to make move';
+                    showMessage(errorMessage, 'error');
+                }
+            } catch (error) {
+                showMessage('Error making move: ' + error.message, 'error');
+            }
+        }
+
+        function makeMoveWebSocket(row, col) {
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                const message = {
+                    type: 'make_move',
+                    row: row,
+                    col: col
+                };
+                websocket.send(JSON.stringify(message));
+            }
+        }
+
+        function resetGame() {
+            if (isVercel) {
+                resetGamePolling();
+            } else {
+                resetGameWebSocket();
+            }
+        }
+
+        async function resetGamePolling() {
+            try {
+                const response = await fetch('/reset-game', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `room_id=${encodeURIComponent(currentRoomId)}`
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('Game reset successfully!', 'success');
+                } else {
+                    const errorMessage = data.detail || data.message || 'Failed to reset game';
+                    showMessage(errorMessage, 'error');
+                }
+            } catch (error) {
+                showMessage('Error resetting game: ' + error.message, 'error');
+            }
+        }
+
+        function resetGameWebSocket() {
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                const message = {
+                    type: 'reset_game'
+                };
+                websocket.send(JSON.stringify(message));
+            }
+        }
+
+        async function addComputerOpponent() {
+            try {
+                const response = await fetch('/add-computer-opponent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `room_id=${encodeURIComponent(currentRoomId)}`
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('Computer opponent added! Game starting...', 'success');
+                    await loadRoomInfo();
+                    // Hide waiting section when game starts
+                    document.getElementById('waitingSection').style.display = 'none';
+                } else {
+                    const errorMessage = data.detail || data.message || 'Failed to add computer opponent';
+                    showMessage(errorMessage, 'error');
+                }
+            } catch (error) {
+                showMessage('Error adding computer opponent: ' + error.message, 'error');
+            }
+        }
+
+        async function refreshRoomInfo() {
+            await loadRoomInfo();
+        }
+
+        function leaveRoom() {
+            if (isVercel) {
+                stopPolling();
+            } else {
+                if (websocket) {
+                    websocket.close();
+                }
+            }
+            
+            currentRoomId = null;
+            currentPlayerId = null;
+            currentUsername = null;
+            myPlayerNumber = null;
+            
+            showSection('lobby');
+            document.getElementById('joinRoomId').value = '';
+            document.getElementById('joinUsername').value = '';
+            document.getElementById('joinPassword').value = '';
+            document.getElementById('roomName').value = '';
+            document.getElementById('creatorUsername').value = '';
+            document.getElementById('roomPassword').value = '';
+        }
+    </script>
+</body>
+</html>
